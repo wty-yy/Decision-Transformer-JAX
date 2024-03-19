@@ -5,6 +5,10 @@ import numpy as np
 from flax.training import train_state
 from typing import Callable, Sequence
 from utils import Config
+from functools import partial
+
+nn.Dense = partial(nn.Dense, kernel_init=nn.initializers.normal(stddev=0.02))
+nn.Embed = partial(nn.Embed, embedding_init=nn.initializers.normal(stddev=0.02))
 
 class TrainState(train_state.TrainState):
   dropout_rng: jax.Array
@@ -26,11 +30,12 @@ class GPTConfig(Config):
 class TrainConfig(Config):
   seed = 42
   weight_decay = 0.1
-  lr = 3e-4
+  lr = 6e-4
   total_epochs = 100
   batch_size = 128
   betas = (0.9, 0.95)  # Adamw beta1, beta2
-  warmup_tokens = 128*128*256  # 375e6
+  # warmup_tokens = 128*128*256  # 375e6
+  warmup_tokens = 512*20  # 375e6
   lr_fn: Callable
 
   def __init__(self, steps_per_epoch, n_token, **kwargs):
@@ -172,8 +177,9 @@ class GPT(nn.Module):  # For Text
     self.model_step = jax.jit(model_step, static_argnames='train')
 
     def predict(state: TrainState, s, a, rtg, timestep, mask_len: Sequence[int] = None, rng: jax.Array = None, deterministic: bool = False):
+      # print(s.shape, a.shape, rtg.shape, timestep.shape, mask_len.shape)
       logits = state.apply_fn({'params': state.params}, s, a, rtg, timestep, train=False, mask_len=mask_len)
-      logits = logits[:, 1::3, :]  # (B, l, N_e)
+      # logits = logits[:, 1::3, :]  # (B, l, N_e)
       if mask_len is not None:
         logits = logits[jnp.arange(logits.shape[0]), mask_len-1, :]  # (B, n_vocab)
       if deterministic:
