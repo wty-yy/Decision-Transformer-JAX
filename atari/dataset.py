@@ -50,7 +50,7 @@ class DatasetBuilder:
     used_traj_per_buffer = np.zeros(50, dtype=np.int32)
     n_traj = 0
     while len(data['obs']) < self.dataset_step:
-      buffer_id = random.randint(0, 50)
+      buffer_id = random.randint(0, 49)
       i = used_traj_per_buffer[buffer_id]
       print(f"Loading from buffer {buffer_id} which has {i} already loaded.")
       frb = FixedReplayBuffer(self.path_buffer, buffer_id, **dict(replay_config))
