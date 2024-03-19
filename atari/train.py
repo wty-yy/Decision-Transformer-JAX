@@ -8,8 +8,6 @@ from ckpt_manager import CheckpointManager
 from tqdm import tqdm
 
 def train():
-  import torch
-  torch.multiprocessing.set_start_method('spawn')
   ### Parse augment and TF Writer ###
   args, writer = parse_args_and_writer()
   ### Dataset ###
@@ -25,6 +23,7 @@ def train():
   state = gpt.get_state(train_cfg=train_cfg, verbose=False)
   ### Checkpoint ###
   ckpt_manager = CheckpointManager(str(args.path_logs / 'ckpt'))
+  write_tfboard_freq = min(100, len(train_ds))
 
   ### Train and Evaluate ###
   for ep in range(args.total_epochs):
@@ -37,11 +36,10 @@ def train():
       state, (loss, acc) = gpt.model_step(state, s, a, rtg, timestep, y, train=True)
       logs.update(['train_loss', 'train_acc'], [loss, acc])
       bar.set_description(f"loss={loss:.4f}, acc={acc:.4f}")
-      if state.step % 100 == 0:
-        print(logs.get_time_length())
+      if state.step % write_tfboard_freq == 0:
         logs.update(
           ['SPS', 'epoch', 'learning_rate'],
-          [100 / logs.get_time_length(), ep+1, train_cfg.lr_fn(state.step)]
+          [write_tfboard_freq / logs.get_time_length(), ep+1, train_cfg.lr_fn(state.step)]
         )
         logs.writer_tensorboard(writer, state.step)
         logs.reset()
