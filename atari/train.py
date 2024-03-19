@@ -30,7 +30,7 @@ def train():
     print(f"Epoch: {ep+1}/{args.total_epochs}")
     print("Training...")
     logs.reset()
-    bar = tqdm(train_ds)
+    bar = tqdm(train_ds, ncols=80)
     for s, a, rtg, timestep, y in bar:
       s, a, rtg, timestep, y = s.numpy(), a.numpy(), rtg.numpy(), timestep.numpy(), y.numpy()
       state, (loss, acc) = gpt.model_step(state, s, a, rtg, timestep, y, train=True)

@@ -87,7 +87,7 @@ class GPT(nn.Module):  # For Text
     B, l = rtg.shape
     assert cfg.n_token == l * 3, "The n_token should be 3 * n_step"
     ### Embedding ###
-    rtg = nn.Dense(cfg.n_embd)(jnp.expand_dims(rtg, -1))  # (B, l) -> (B, l, N_e)
+    rtg = nn.tanh(nn.Dense(cfg.n_embd)(jnp.expand_dims(rtg, -1)))  # (B, l) -> (B, l, N_e)
     s = nn.Sequential([  # (B, l, 84, 84, 4) -> (B, l, N_e)
       nn.Conv(32, kernel_size=(8, 8), strides=4, padding='VALID'), nn.selu,  # (20, 20, 32)
       nn.Conv(64, kernel_size=(4, 4), strides=2, padding='VALID'), nn.selu,  # (9, 9, 64)
@@ -95,7 +95,7 @@ class GPT(nn.Module):  # For Text
       lambda x: jnp.reshape(x, (B, l, -1)),
       nn.Dense(cfg.n_embd), nn.tanh
     ])(s)
-    a = nn.Embed(cfg.n_vocab, cfg.n_embd)(a)  # (B, l) -> (B, l, N_e)
+    a = nn.tanh(nn.Embed(cfg.n_vocab, cfg.n_embd)(a))  # (B, l) -> (B, l, N_e)
     time_embd = nn.Embed(cfg.max_timestep, cfg.n_embd)(timestep)  # (B, l) -> (B, l, N_e)
     pos_embd = self.param('pos_embd', lambda _, shape: jnp.zeros(shape), (1, cfg.n_token, cfg.n_embd))  # (1, L, N_e)
     ### Build Token ###

@@ -12,7 +12,7 @@ def parse_args_and_writer(input_args=None, with_writer=True) -> tuple[argparse.N
   parser.add_argument("--wandb", type=str2bool, default=False, const=True, nargs='?')
   ### Training ###
   parser.add_argument("--learning-rate", type=float, default=3e-4)
-  parser.add_argument("--total-epochs", type=int, default=10)
+  parser.add_argument("--total-epochs", type=int, default=5)
   parser.add_argument("--batch-size", type=int, default=128)
   ### Model ###
   parser.add_argument("--n-embd", type=int, default=128)  # 768
