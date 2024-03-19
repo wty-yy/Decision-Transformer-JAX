@@ -14,7 +14,7 @@ def train():
   args, writer = parse_args_and_writer()
   ### Dataset ###
   ds_builder = DatasetBuilder(args.path_buffer, args.dataset_step, args.traj_per_buffer, args.seed)
-  train_ds = ds_builder.get_dataset(args.n_token, args.batch_size)
+  train_ds = ds_builder.get_dataset(args.n_token, args.batch_size, args.num_workers)
   args.n_vocab, args.max_timestep = int(max(ds_builder.data['action'])) + 1, int(max(ds_builder.data['timestep'])) + 1  # since we must get last idx value
   args.steps_per_epoch = len(train_ds)
   ### Model ###

@@ -24,6 +24,7 @@ def parse_args_and_writer(input_args=None, with_writer=True) -> tuple[argparse.N
   parser.add_argument("--game", type=str, default="Breakout")
   parser.add_argument("--dataset-step", type=int, default=10000, help="The number of step samples from replay buffer")
   parser.add_argument("--traj-per-buffer", type=int, default=10, help="The number of trajectory samples from each replay buffer")
+  parser.add_argument("--num-workers", type=int, default=4)
 
   args = parser.parse_args(input_args)
   assert args.n_token % 3 == 0, f"n_token must be divided by 3, since n_step = n_token / 3"

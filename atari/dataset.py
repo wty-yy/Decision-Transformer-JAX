@@ -87,7 +87,7 @@ class DatasetBuilder:
       print(f"This buffer has {i} loaded steps and there are now {len(data['obs'])} steps total divided into {n_traj}, average trajectory length {len(data['obs']) / n_traj:.2f}")
     assert len(data['return']) == len(data['done_idx']), "The number of trajectories should be same."
     for k in data.keys(): data[k] = np.array(data[k])  # convert to np.ndarray since they are freezed
-    print(f"Max return {max(data['return'])}, max timestep is {max(data['timestep'])}, vocab size {max(data['action'])}")
+    print(f"Max return {max(data['return'])}, max timestep is {max(data['timestep'])}, vocab size {max(data['action'])+1}")
     ### Build return-to-go ###
     st = 0
     rtg = data['rtg'] = np.zeros_like(data['reward'])
@@ -119,13 +119,13 @@ class DatasetBuilder:
         # cv2.waitKey(0)
         if terminal: cum_reward = 0
     
-  def get_dataset(self, n_token: int, batch_size: int):  # Only train dataset
+  def get_dataset(self, n_token: int, batch_size: int, num_workers: int = 4):  # Only train dataset
     return DataLoader(
       StateActionReturnDataset(self.data, n_token),
       batch_size=batch_size,
       shuffle=True,
       persistent_workers=True,  # GOOD
-      num_workers=4,
+      num_workers=num_workers,
       drop_last=True,
     )
 
