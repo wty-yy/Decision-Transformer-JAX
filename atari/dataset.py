@@ -89,13 +89,12 @@ class DatasetBuilder:
     for k in data.keys(): data[k] = np.array(data[k])  # convert to np.ndarray since they are freezed
     print(f"Max return {max(data['return'])}, max timestep is {max(data['timestep'])}, vocab size {max(data['action'])+1}")
     ### Build return-to-go ###
-    st = 0
+    st = -1
     rtg = data['rtg'] = np.zeros_like(data['reward'])
-    for idx, i in enumerate(data['done_idx']):
-      ret = data['return'][idx]
+    for i in data['done_idx']:
+      rtg[i]
       for j in range(i, st, -1):
-        rtg[j] = ret
-        ret -= data['reward'][j]
+        rtg[j] = data['reward'][j] + (0 if j == i else rtg[j+1])
       st = i
     data.pop('reward'); data.pop('return')  # free space
   
@@ -105,14 +104,16 @@ class DatasetBuilder:
     cv2.resizeWindow('Replay buffer', 5*84, 5*84)
     data = self.data
     cum_reward = 0
-    i = np.argmax(data['return'])
-    st = 0 if i == 0 else data['done_idx'][i-1] + 1
+    st = np.argmax(data['rtg'])
+    assert st == 0 or (st-1) in data['done_idx'], "CHECK rtg"
+    # st = 0 if i == 0 else data['done_idx'][i-1] + 1
     for i in range(st, len(data['obs'])):
     # for st in data['done_idx']:
       # for i in range(st-10, st+10):
-        cum_reward += data['reward'][i]
         terminal = i in data['done_idx']
-        print(f"{i:06}: cum_reward={cum_reward}, reward={data['reward'][i]}, terminal={terminal}, action={data['action'][i]}")
+        reward = data['rtg'][i] - (0 if terminal else data['rtg'][i+1])
+        cum_reward += reward
+        print(f"{i:06}: cum_reward={cum_reward}, reward={reward}, terminal={terminal}, action={data['action'][i]}")
         img = data['obs'][i][...,0]
         cv2.imshow('Replay buffer', img)
         cv2.waitKey(50 + (1000 if terminal else 0))  # 20fps
@@ -155,7 +156,7 @@ class StateActionReturnDataset(Dataset):
 if __name__ == '__main__':
   path_buffer = r"/home/yy/Coding/GitHub/decision-transformer/atari/dqn_replay/Breakout/1/replay_logs"
   ds_builder = DatasetBuilder(path_buffer, dataset_step=5000, traj_per_buffer=20)
-  # ds_builder.show_buffer()
+  ds_builder.show_buffer()
   torch.multiprocessing.set_start_method('spawn')
   ds = ds_builder.get_dataset(30*3, 128)
   from tqdm import tqdm
