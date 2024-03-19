@@ -37,7 +37,8 @@ def train():
       state, (loss, acc) = gpt.model_step(state, s, a, rtg, timestep, y, train=True)
       logs.update(['train_loss', 'train_acc'], [loss, acc])
       bar.set_description(f"loss={loss:.4f}, acc={acc:.4f}")
-      if state.step % 100:
+      if state.step % 100 == 0:
+        print(logs.get_time_length())
         logs.update(
           ['SPS', 'epoch', 'learning_rate'],
           [100 / logs.get_time_length(), ep+1, train_cfg.lr_fn(state.step)]
