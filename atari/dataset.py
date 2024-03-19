@@ -1,4 +1,4 @@
-import os, random, bisect
+import os, random, bisect, torch
 from torch.utils.data import Dataset, DataLoader
 from dopamine.replay_memory import circular_replay_buffer
 from typing import List
@@ -124,10 +124,11 @@ class DatasetBuilder:
       StateActionReturnDataset(self.data, n_token),
       batch_size=batch_size,
       shuffle=True,
-      persistent_workers=True,
-      num_workers=8,
+      persistent_workers=True,  # GOOD
+      num_workers=4,
       drop_last=True,
     )
+
 
 class StateActionReturnDataset(Dataset):
   def __init__(self, data: dict, n_token: int):
@@ -155,7 +156,10 @@ if __name__ == '__main__':
   path_buffer = r"/home/yy/Coding/GitHub/decision-transformer/atari/dqn_replay/Breakout/1/replay_logs"
   ds_builder = DatasetBuilder(path_buffer, dataset_step=5000, traj_per_buffer=20)
   # ds_builder.show_buffer()
+  torch.multiprocessing.set_start_method('spawn')
   ds = ds_builder.get_dataset(30*3, 128)
   from tqdm import tqdm
-  for s, a, rtg, timestep in tqdm(ds):
-    x = s.numpy(), a.numpy(), rtg.numpy(), timestep.numpy()
+  for s, a, rtg, timestep, y in tqdm(ds):
+    ...
+  for s, a, rtg, timestep, y in tqdm(ds):
+    ...

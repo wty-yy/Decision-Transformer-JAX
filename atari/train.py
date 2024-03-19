@@ -1,3 +1,6 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parents[1]))
 from dt_model import GPTConfig, TrainConfig, GPT
 from parse_and_writer import parse_args_and_writer, logs
 from dataset import DatasetBuilder
@@ -5,6 +8,8 @@ from ckpt_manager import CheckpointManager
 from tqdm import tqdm
 
 def train():
+  import torch
+  torch.multiprocessing.set_start_method('spawn')
   ### Parse augment and TF Writer ###
   args, writer = parse_args_and_writer()
   ### Dataset ###
