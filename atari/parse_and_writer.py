@@ -58,12 +58,13 @@ logs = Logs(
     'train_loss': MeanMetric(),
     'train_acc': MeanMetric(),
     'eval_return': MeanMetric(),
+    'eval_score': MeanMetric(),
     'SPS': MeanMetric(),
     'epoch': 0,
-    'learning_rate': 0,
+    'learning_rate': MeanMetric(),
   },
   folder2name={
     'Metrics': ['learning_rate', 'SPS', 'epoch'],
-    'Charts': ['train_loss', 'train_acc', 'eval_return'],
+    'Charts': ['train_loss', 'train_acc', 'eval_return', 'eval_score'],
   }
 )

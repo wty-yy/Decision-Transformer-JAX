@@ -6,6 +6,8 @@ from parse_and_writer import parse_args_and_writer, logs
 from dataset import DatasetBuilder
 from ckpt_manager import CheckpointManager
 from tqdm import tqdm
+from eval import Evaluator
+import numpy as np
 
 def train():
   ### Parse augment and TF Writer ###
@@ -17,13 +19,15 @@ def train():
   args.steps_per_epoch = len(train_ds)
   ### Model ###
   gpt_cfg = GPTConfig(**vars(args))
-  gpt = GPT(cfg=gpt_cfg)
-  gpt.create_fns()
+  model = GPT(cfg=gpt_cfg)
+  model.create_fns()
   train_cfg = TrainConfig(**vars(args))
-  state = gpt.get_state(train_cfg=train_cfg, verbose=False)
+  state = model.get_state(train_cfg=train_cfg, verbose=False)
   ### Checkpoint ###
   ckpt_manager = CheckpointManager(str(args.path_logs / 'ckpt'))
   write_tfboard_freq = min(100, len(train_ds))
+  ### Evaluator ###
+  evaluator = Evaluator(model, args.seed)
 
   ### Train and Evaluate ###
   for ep in range(args.total_epochs):
@@ -33,7 +37,7 @@ def train():
     bar = tqdm(train_ds, ncols=80)
     for s, a, rtg, timestep, y in bar:
       s, a, rtg, timestep, y = s.numpy(), a.numpy(), rtg.numpy(), timestep.numpy(), y.numpy()
-      state, (loss, acc) = gpt.model_step(state, s, a, rtg, timestep, y, train=True)
+      state, (loss, acc) = model.model_step(state, s, a, rtg, timestep, y, train=True)
       logs.update(['train_loss', 'train_acc'], [loss, acc])
       bar.set_description(f"loss={loss:.4f}, acc={acc:.4f}")
       if state.step % write_tfboard_freq == 0:
@@ -43,6 +47,10 @@ def train():
         )
         logs.writer_tensorboard(writer, state.step)
         logs.reset()
+    print("Evaluating...")
+    ret, score = evaluator(state, n_test=10, rtg=90, deterministic=False)
+    logs.update(['eval_return', 'eval_score', 'epoch'], [np.mean(ret), np.mean(score), ep+1])
+    logs.writer_tensorboard(writer, state.step)
     ckpt_manager.save(ep+1, state, vars(args))
   ckpt_manager.close()
   if args.wandb: wandb.close()

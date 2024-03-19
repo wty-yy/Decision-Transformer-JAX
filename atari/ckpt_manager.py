@@ -5,7 +5,7 @@ from flax.training import train_state
 
 class CheckpointManager(ocp.CheckpointManager):
   def __init__(self, path_save, max_to_keep=1, remove_old=False):
-    path_save = str(Path(path_save).resolve())
+    self.path_save = path_save = str(Path(path_save).resolve())
     if remove_old:
       shutil.rmtree(path_save, ignore_errors=True)
     super().__init__(
@@ -15,11 +15,13 @@ class CheckpointManager(ocp.CheckpointManager):
       item_handlers={'params': ocp.StandardCheckpointHandler(), 'config': ocp.JsonCheckpointHandler()}
     )
   
-  def save(self, epoch: int, state: train_state.TrainState, config: dict):
+  def save(self, epoch: int, state: train_state.TrainState, config: dict, verbose: bool = True):
     args = ocp.args
     for k, v in config.items():
       if isinstance(v, Path): config[k] = str(v)
     config['_step'] = int(state.step)
+    if verbose:
+      print(f"Save weights at {self.path_save}/{epoch:03}/")
     return super().save(epoch, args=args.Composite(
       params=args.StandardSave(state.params),
       config=args.JsonSave(config)
