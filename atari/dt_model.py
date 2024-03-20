@@ -7,8 +7,8 @@ from typing import Callable, Sequence
 from utils import Config
 from functools import partial
 
-nn.Dense = partial(nn.Dense, kernel_init=nn.initializers.normal(stddev=0.02))
-nn.Embed = partial(nn.Embed, embedding_init=nn.initializers.normal(stddev=0.02))
+Dense = partial(nn.Dense, kernel_init=nn.initializers.normal(stddev=0.02))
+Embed = partial(nn.Embed, embedding_init=nn.initializers.normal(stddev=0.02))
 
 class TrainState(train_state.TrainState):
   dropout_rng: jax.Array
@@ -56,14 +56,14 @@ class CausalSelfAttention(nn.Module):
     mask = jnp.expand_dims(jnp.tri(L), (0, 1))  # Only consider previous token values
     if mask_len is not None:
       mask = jnp.where(jnp.arange(L).reshape(1, 1, L, 1).repeat(B, 0) >= mask_len.reshape(B, 1, 1, 1), 0, mask)
-    x = nn.Dense(3 * self.n_embd)(x)
+    x = Dense(3 * self.n_embd)(x)
     q, k, v = jnp.array_split(x.reshape(B, L, self.n_head, -1).transpose(0, 2, 1, 3), 3, -1)
     attn = q @ jnp.swapaxes(k, -1, -2) / jnp.sqrt(D)
     attn = jnp.where(mask == 0, -1e18, attn)
     attn = jax.nn.softmax(attn)
     attn = nn.Dropout(self.p_drop_attn)(attn, deterministic=not train)
     y = (attn @ v).transpose(0, 2, 1, 3).reshape(B, L, self.n_embd)
-    y = nn.Dense(self.n_embd)(y)
+    y = Dense(self.n_embd)(y)
     return y
 
 class AttentionBlock(nn.Module):
@@ -77,8 +77,8 @@ class AttentionBlock(nn.Module):
     x = x + nn.Dropout(self.cfg.p_drop_resid)(z, deterministic=not train)
     z = nn.Sequential([
       nn.LayerNorm(),
-      nn.Dense(4*self.cfg.n_embd), nn.selu,
-      nn.Dense(self.cfg.n_embd),
+      Dense(4*self.cfg.n_embd), nn.selu,
+      Dense(self.cfg.n_embd),
     ])(x)
     x = x + nn.Dropout(self.cfg.p_drop_resid)(z, deterministic=not train)
     return x
@@ -92,19 +92,20 @@ class GPT(nn.Module):
     B, l = rtg.shape
     assert cfg.n_token == l * 3, "The n_token should be 3 * n_step"
     ### Embedding ###
-    rtg = nn.tanh(nn.Dense(cfg.n_embd)(jnp.expand_dims(rtg, -1)))  # (B, l) -> (B, l, N_e)
+    rtg = nn.tanh(Dense(cfg.n_embd)(jnp.expand_dims(rtg, -1)))  # (B, l) -> (B, l, N_e)
     s = nn.Sequential([  # (B, l, 84, 84, 4) -> (B, l, N_e)
       nn.Conv(32, kernel_size=(8, 8), strides=4, padding='VALID'), nn.selu,  # (20, 20, 32)
       nn.Conv(64, kernel_size=(4, 4), strides=2, padding='VALID'), nn.selu,  # (9, 9, 64)
       nn.Conv(64, kernel_size=(3, 3), strides=1, padding='VALID'), nn.selu,  # (7, 7, 64)
       lambda x: jnp.reshape(x, (B, l, -1)),
-      nn.Dense(cfg.n_embd), nn.tanh
+      Dense(cfg.n_embd), nn.tanh
     ])(s)
-    a = nn.tanh(nn.Embed(cfg.n_vocab, cfg.n_embd)(a))  # (B, l) -> (B, l, N_e)
+    a = nn.tanh(Embed(cfg.n_vocab, cfg.n_embd)(a))  # (B, l) -> (B, l, N_e)
     time_embd = nn.Embed(cfg.max_timestep, cfg.n_embd, embedding_init=nn.initializers.zeros)(timestep)  # (B, l) -> (B, l, N_e)
     # time_embd = self.param('time_embd', lambda _, shape: jnp.zeros(shape), (1, cfg.max_timestep, cfg.n_embd))  # (1, T, N_e)
     # time_embd = time_embd[:, timestep.reshape(-1), :]  # (1, l, N_e)
-    pos_embd = self.param('pos_embd', lambda _, shape: jnp.zeros(shape), (1, cfg.n_token, cfg.n_embd))  # (1, L, N_e)
+    pos_embd = nn.Embed(cfg.n_token, cfg.n_embd, embedding_init=nn.initializers.zeros)(jnp.arange(cfg.n_token))  # (1, L, N_e)
+    # pos_embd = self.param('pos_embd', lambda _, shape: jnp.zeros(shape), (1, cfg.n_token, cfg.n_embd))  # (1, L, N_e)
     ### Build Token ###
     rtg, s, a = rtg.transpose(1, 0, 2), s.transpose(1, 0, 2), a.transpose(1, 0, 2)  # (B, l, N_e) -> (l, B, N_e)
     def stack(_, xs):  # stack xs elems in sequentially
@@ -116,14 +117,15 @@ class GPT(nn.Module):
     for _ in range(cfg.n_block):
       x = AttentionBlock(cfg)(x, train, mask_len)
     x = nn.LayerNorm()(x)
-    x = nn.Dense(cfg.n_vocab)(x)
+    x = Dense(cfg.n_vocab)(x)
     return x
     
   def get_state(self, train_cfg: TrainConfig, verbose: bool = False, load_path: str = None, train: bool = True) -> TrainState:
     def check_decay_params(kp, x):
       fg = x.ndim > 1
       for k in kp:
-        if k.key in ['pos_embd', 'LayerNorm', 'Embed']:
+        # if k.key in ['pos_embd', 'LayerNorm', 'Embed']:
+        if k.key in ['LayerNorm', 'Embed']:
           fg = False; break
       return fg
     def lr_fn():
