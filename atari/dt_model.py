@@ -36,6 +36,7 @@ class TrainConfig(Config):
   betas = (0.9, 0.95)  # Adamw beta1, beta2
   # warmup_tokens = 128*128*256  # 375e6
   warmup_tokens = 512*20  # 375e6
+  clip_global_norm = 1.0
   lr_fn: Callable
 
   def __init__(self, steps_per_epoch, n_token, **kwargs):
@@ -155,7 +156,10 @@ class GPT(nn.Module):
       apply_fn=self.apply,
       params=variables['params'],
       # AdamW is Adam with weight decay
-      tx=optax.adamw(train_cfg.lr_fn, train_cfg.betas[0], train_cfg.betas[1], weight_decay=train_cfg.weight_decay, mask=decay_mask),
+      tx=optax.chain(
+        optax.clip_by_global_norm(train_cfg.clip_global_norm),
+        optax.adamw(train_cfg.lr_fn, train_cfg.betas[0], train_cfg.betas[1], weight_decay=train_cfg.weight_decay, mask=decay_mask),
+      ),
       dropout_rng=rng,
     )
     if load_path is not None:
