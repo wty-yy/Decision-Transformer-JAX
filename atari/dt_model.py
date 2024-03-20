@@ -83,7 +83,7 @@ class AttentionBlock(nn.Module):
     x = x + nn.Dropout(self.cfg.p_drop_resid)(z, deterministic=not train)
     return x
 
-class GPT(nn.Module):  # For Text
+class GPT(nn.Module):
   cfg: GPTConfig
 
   @nn.compact
@@ -101,7 +101,9 @@ class GPT(nn.Module):  # For Text
       nn.Dense(cfg.n_embd), nn.tanh
     ])(s)
     a = nn.tanh(nn.Embed(cfg.n_vocab, cfg.n_embd)(a))  # (B, l) -> (B, l, N_e)
-    time_embd = nn.Embed(cfg.max_timestep, cfg.n_embd)(timestep)  # (B, l) -> (B, l, N_e)
+    time_embd = nn.Embed(cfg.max_timestep, cfg.n_embd, embedding_init=nn.initializers.zeros)(timestep)  # (B, l) -> (B, l, N_e)
+    # time_embd = self.param('time_embd', lambda _, shape: jnp.zeros(shape), (1, cfg.max_timestep, cfg.n_embd))  # (1, T, N_e)
+    # time_embd = time_embd[:, timestep.reshape(-1), :]  # (1, l, N_e)
     pos_embd = self.param('pos_embd', lambda _, shape: jnp.zeros(shape), (1, cfg.n_token, cfg.n_embd))  # (1, L, N_e)
     ### Build Token ###
     rtg, s, a = rtg.transpose(1, 0, 2), s.transpose(1, 0, 2), a.transpose(1, 0, 2)  # (B, l, N_e) -> (l, B, N_e)
