@@ -144,14 +144,13 @@ class StateActionReturnDataset(Dataset):
     done_idx = idx + n_step - 1
     # bisect_left(a, x): if x in a, return left x index, else return index with elem bigger than x
     # minus one for building the target action
-    done_idx = min(data['done_idx'][bisect.bisect_left(data['done_idx'], idx)]-1, done_idx)
+    done_idx = min(data['done_idx'][bisect.bisect_left(data['done_idx'], idx)], done_idx)
     idx = done_idx - n_step + 1
     s = data['obs'][idx:done_idx+1].astype(np.float32) / 255.     # (n_step, 84, 84, 4)
     a = data['action'][idx:done_idx+1].astype(np.int32)           # (n_step,)
-    target = data['action'][idx+1:done_idx+2].astype(np.int32)    # (n_step,)
     rtg = data['rtg'][idx:done_idx+1].astype(np.float32)          # (n_step,)
     timestep = data['timestep'][idx:done_idx+1].astype(np.int32)  # (n_step,)
-    return s, a, rtg, timestep, target
+    return s, a, rtg, timestep
   
 if __name__ == '__main__':
   path_buffer = r"/home/yy/Coding/GitHub/decision-transformer/atari/dqn_replay/Breakout/1/replay_logs"

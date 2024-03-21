@@ -15,8 +15,12 @@ def train():
   ### Dataset ###
   ds_builder = DatasetBuilder(args.path_buffer, args.dataset_step, args.traj_per_buffer, args.seed)
   train_ds = ds_builder.get_dataset(args.n_token, args.batch_size, args.num_workers)
-  args.n_vocab, args.max_timestep = int(max(ds_builder.data['action'])) + 1, int(max(ds_builder.data['timestep'])) + 1  # since we must get last idx value
+  args.n_vocab, args.max_timestep = int(max(ds_builder.data['action'])) + 1, int(max(ds_builder.data['timestep']))  # since we must get last idx value
   args.steps_per_epoch = len(train_ds)
+  # from debug.create_dataset import get_dataset
+  # data, train_ds = get_dataset(args)
+  # args.n_vocab, args.max_timestep = data.vocab_size, int(max(data.timesteps))
+  # args.steps_per_epoch = len(train_ds)
   ### Model ###
   gpt_cfg = GPTConfig(**vars(args))
   model = GPT(cfg=gpt_cfg)
@@ -35,9 +39,10 @@ def train():
     print("Training...")
     logs.reset()
     bar = tqdm(train_ds, ncols=80)
-    for s, a, rtg, timestep, y in bar:
-      s, a, rtg, timestep, y = s.numpy(), a.numpy(), rtg.numpy(), timestep.numpy(), y.numpy()
-      state, (loss, acc) = model.model_step(state, s, a, rtg, timestep, y, train=True)
+    for s, a, rtg, timestep in bar:
+      s, a, rtg, timestep = s.numpy(), a.numpy(), rtg.numpy(), timestep.numpy()
+      # Look out the target is same as `a`, since we want to predict s[i] -> a[i]
+      state, (loss, acc) = model.model_step(state, s, a, rtg, timestep, a, train=True)
       logs.update(['train_loss', 'train_acc'], [loss, acc])
       bar.set_description(f"loss={loss:.4f}, acc={acc:.4f}")
       if state.step % write_tfboard_freq == 0:

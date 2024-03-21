@@ -102,13 +102,14 @@ class GPT(nn.Module):
       Dense(cfg.n_embd), nn.tanh
     ])(s)
     a = nn.tanh(Embed(cfg.n_vocab, cfg.n_embd)(a))  # (B, l) -> (B, l, N_e)
-    time_embd = nn.Embed(cfg.max_timestep, cfg.n_embd, embedding_init=nn.initializers.zeros)(timestep)  # (B, l) -> (B, l, N_e)
+    time_embd = nn.Embed(cfg.max_timestep+1, cfg.n_embd, embedding_init=nn.initializers.zeros)(timestep)  # (B, l) -> (B, l, N_e)
     # time_embd = self.param('time_embd', lambda _, shape: jnp.zeros(shape), (1, cfg.max_timestep, cfg.n_embd))  # (1, T, N_e)
     # time_embd = time_embd[:, timestep.reshape(-1), :]  # (1, l, N_e)
     pos_embd = nn.Embed(cfg.n_token, cfg.n_embd, embedding_init=nn.initializers.zeros)(jnp.arange(cfg.n_token))  # (1, L, N_e)
     # pos_embd = self.param('pos_embd', lambda _, shape: jnp.zeros(shape), (1, cfg.n_token, cfg.n_embd))  # (1, L, N_e)
     ### Build Token ###
     rtg, s, a = rtg.transpose(1, 0, 2), s.transpose(1, 0, 2), a.transpose(1, 0, 2)  # (B, l, N_e) -> (l, B, N_e)
+    ### If train the last output is use less, since it is last action's output ###
     def stack(_, xs):  # stack xs elems in sequentially
       return _, jnp.stack([xs[0], xs[1], xs[2]])
     x = jax.lax.scan(stack, None, [rtg, s, a])[1].reshape(cfg.n_token, B, cfg.n_embd).transpose(1, 0, 2)  # (B, L, N_e)
@@ -118,7 +119,7 @@ class GPT(nn.Module):
     for _ in range(cfg.n_block):
       x = AttentionBlock(cfg)(x, train, mask_len)
     x = nn.LayerNorm()(x)
-    x = Dense(cfg.n_vocab)(x)
+    x = Dense(cfg.n_vocab, use_bias=False)(x)
     return x
     
   def get_state(self, train_cfg: TrainConfig, verbose: bool = False, load_path: str = None, train: bool = True) -> TrainState:
@@ -209,7 +210,7 @@ if __name__ == '__main__':
   n_embd = 128
   n_head = 8
   n_block = 6
-  max_timestep = 2005
+  max_timestep = 3000
   # Total Parameters: 1,938,852 (7.8 MB)
   gpt_cfg = GPTConfig(n_vocab, n_token, max_timestep=max_timestep, n_embd=n_embd, n_head=n_head, n_block=n_block)
   print(dict(gpt_cfg))

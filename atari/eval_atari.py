@@ -1,20 +1,15 @@
-import gymnasium as gym
-from gymnasium.wrappers import AtariPreprocessing, FrameStack
+from atari_gym import Env
 from dt_model import GPT
 from flax.training import train_state
 import cv2, jax
 import numpy as np
 
 class Evaluator:
-  def __init__(self, model: GPT, seed: int = 42):
+  def __init__(self, model: GPT, seed: int = 42, game: str = "Breakout"):
     self.model = model
     self.rng = jax.random.PRNGKey(seed)
     self.n_step = self.model.cfg.n_token // 3
-    env = gym.make("BreakoutNoFrameskip-v4")
-    env = AtariPreprocessing(env)  # frame skip 4, scale to (84, 84), turn to gray
-    env = FrameStack(env, 4)
-    env.reset(seed=seed)
-    self.env = env
+    self.env = Env(seed=seed, game=game.lower())
   
   def get_action(self):
     n_step = self.n_step
@@ -29,13 +24,13 @@ class Evaluator:
         return np.pad(x, ((0, 0), (0, delta), (0, 0), (0, 0), (0, 0)))
     mask_len = np.array([min(3 * len(self.s) - 1, n_step * 3 - 1)], np.int32)  # the last action is awalys padding
     rng, self.rng = jax.random.split(self.rng)
-    action = self.model.predict(
+    action = jax.device_get(self.model.predict(
       self.state,
-      pad(self.s).astype(np.float32) / 255.,
+      pad(self.s).astype(np.float32),
       pad(self.a).astype(np.int32),
       pad(self.rtg).astype(np.float32),
       pad(self.timestep).astype(np.int32),
-      mask_len, rng, self.deterministic)[0]
+      mask_len, rng, self.deterministic))[0]
     return action
   
   def __call__(self, state: train_state.TrainState, n_test: int = 10, rtg: int = 90, deterministic=False, show=False):
@@ -46,15 +41,14 @@ class Evaluator:
     ret, score = [], []
     for i in range(n_test):
       ret.append(0); score.append(0)
-      s, _ = self.env.reset()
+      s = self.env.reset()
       s = np.array(s).transpose(1, 2, 0)
       done, timestep = False, 0
       self.s, self.a, self.rtg, self.timestep = [s], [0], [rtg], [0]
       while not done:
         a = self.get_action()
-        s, r, t1, t2, _ = self.env.step(a)
+        s, r, done = self.env.step(a)
         s = np.array(s).transpose(1, 2, 0)
-        done = t1 | t2
         self.s.append(s)
         self.a[-1] = a; self.a.append(0)  # keep s, a, r in same length, but last action is padding
         self.rtg.append(self.rtg[-1] - int(r > 0))
@@ -85,7 +79,7 @@ class LoadToEvaluate:
     return result
 
 if __name__ == '__main__':
-  path_weights = r"/home/yy/Coding/GitHub/Decision-Transformer-JAX/logs/DT__Breakout__0__20240320_141527/ckpt"
+  path_weights = r"/home/yy/Coding/GitHub/Decision-Transformer-JAX/logs/DT__Breakout__0__20240320_165338/ckpt"
   load_step = 5
   lte = LoadToEvaluate(path_weights, load_step)
   print(lte.evaluate(n_test=10, rtg=90, deterministic=False, show=False))
