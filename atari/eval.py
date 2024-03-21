@@ -80,12 +80,12 @@ class LoadToEvaluate:
     self.state = state.replace(params=params, tx=None, opt_state=None)
     self.evaluator = Evaluator(self.model, cfg['seed'])
   
-  def evaluate(self, n_test: int = 10, rtg: int = 90, deterministic: bool = False, show: bool = False):
+  def evaluate(self, n_test: int = 10, rtg: int = 90, deterministic: bool = True, show: bool = False):
     result = self.evaluator(self.state, n_test=n_test, rtg=rtg, deterministic=deterministic, show=show)
     return result
 
 if __name__ == '__main__':
-  path_weights = r"/home/yy/Coding/GitHub/Decision-Transformer-JAX/logs/DT__Breakout__0__20240320_141527/ckpt"
+  path_weights = r"/home/yy/Coding/GitHub/Decision-Transformer-JAX/logs/DT__Breakout__0__20240321_121021/ckpt"
   load_step = 5
   lte = LoadToEvaluate(path_weights, load_step)
   print(lte.evaluate(n_test=10, rtg=90, deterministic=False, show=False))

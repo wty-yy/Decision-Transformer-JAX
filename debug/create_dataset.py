@@ -103,7 +103,7 @@ class StateActionReturnDataset(Dataset):
         self.timesteps = timesteps
     
     def __len__(self):
-        return len(self.data) - self.block_size  # BUG: self.block_size // 3 - 1
+        return len(self.data) - self.block_size  # BUG: self.block_size // 3
 
     def __getitem__(self, idx):
         block_size = self.block_size // 3
