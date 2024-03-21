@@ -78,7 +78,7 @@ class AttentionBlock(nn.Module):
     x = x + nn.Dropout(self.cfg.p_drop_resid)(z, deterministic=not train)
     z = nn.Sequential([
       nn.LayerNorm(),
-      Dense(4*self.cfg.n_embd), nn.selu,
+      Dense(4*self.cfg.n_embd), nn.silu,
       Dense(self.cfg.n_embd),
     ])(x)
     x = x + nn.Dropout(self.cfg.p_drop_resid)(z, deterministic=not train)
@@ -96,9 +96,9 @@ class GPT(nn.Module):
     # rtg = nn.tanh(Dense(cfg.n_embd)(jnp.expand_dims(rtg, -1)))  # (B, l) -> (B, l, N_e)
     rtg = Dense(cfg.n_embd)(jnp.expand_dims(rtg, -1))  # (B, l) -> (B, l, N_e)
     s = nn.Sequential([  # (B, l, 84, 84, 4) -> (B, l, N_e)
-      nn.Conv(32, kernel_size=(8, 8), strides=4, padding='VALID'), nn.selu,  # (20, 20, 32)
-      nn.Conv(64, kernel_size=(4, 4), strides=2, padding='VALID'), nn.selu,  # (9, 9, 64)
-      nn.Conv(64, kernel_size=(3, 3), strides=1, padding='VALID'), nn.selu,  # (7, 7, 64)
+      nn.Conv(32, kernel_size=(8, 8), strides=4, padding='VALID'), nn.silu,  # (20, 20, 32)
+      nn.Conv(64, kernel_size=(4, 4), strides=2, padding='VALID'), nn.silu,  # (9, 9, 64)
+      nn.Conv(64, kernel_size=(3, 3), strides=1, padding='VALID'), nn.silu,  # (7, 7, 64)
       lambda x: jnp.reshape(x, (B, l, -1)),
       # Dense(cfg.n_embd), nn.tanh
       Dense(cfg.n_embd)
