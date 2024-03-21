@@ -58,7 +58,9 @@ def train():
     logs.writer_tensorboard(writer, state.step)
     ckpt_manager.save(ep+1, state, vars(args))
   ckpt_manager.close()
-  if args.wandb: wandb.close()
+  if args.wandb:
+    import wandb
+    wandb.close()
 
 if __name__ == '__main__':
   train()

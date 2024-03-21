@@ -51,7 +51,8 @@ class Evaluator:
         s = np.array(s).transpose(1, 2, 0)
         self.s.append(s)
         self.a[-1] = a; self.a.append(0)  # keep s, a, r in same length, but last action is padding
-        self.rtg.append(self.rtg[-1] - int(r > 0))
+        # self.rtg.append(self.rtg[-1] - int(r > 0))
+        self.rtg.append(self.rtg[-1] - r)
         timestep = min(timestep + 1, self.model.cfg.max_timestep - 1)
         self.timestep.append(timestep)
         ret[-1] += int(r > 0); score[-1] += r
@@ -82,4 +83,6 @@ if __name__ == '__main__':
   path_weights = r"/home/yy/Coding/GitHub/Decision-Transformer-JAX/logs/DT__Breakout__0__20240321_121021/ckpt"
   load_step = 5
   lte = LoadToEvaluate(path_weights, load_step)
-  print(lte.evaluate(n_test=10, rtg=90, deterministic=False, show=False))
+  ret, score = lte.evaluate(n_test=10, rtg=90, deterministic=False, show=False)
+  print(ret, score)
+  print(np.mean(ret), np.mean(score))
