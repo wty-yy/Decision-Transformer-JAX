@@ -60,7 +60,7 @@ def train():
   ckpt_manager.close()
   if args.wandb:
     import wandb
-    wandb.close()
+    wandb.finish()
 
 if __name__ == '__main__':
   train()

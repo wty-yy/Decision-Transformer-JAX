@@ -7,7 +7,7 @@ def str2bool(x): return x in ['yes', 'y', 'True', '1']
 def parse_args_and_writer(input_args=None, with_writer=True) -> tuple[argparse.Namespace, SummaryWriter]:
   parser = argparse.ArgumentParser()
   ### Gobal ###
-  parser.add_argument("--name", type=str, default="DT")
+  parser.add_argument("--name", type=str, default="DT_wty")
   parser.add_argument("--seed", type=int, default=0)
   parser.add_argument("--wandb", type=str2bool, default=False, const=True, nargs='?')
   ### Training ###
