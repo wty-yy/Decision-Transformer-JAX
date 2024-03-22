@@ -1,3 +1,5 @@
+import os
+os.environ['XLA_PYTHON_CLIENT_PREALLOCATE'] = 'false'  # allocate GPU memory as needed
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parents[1]))
