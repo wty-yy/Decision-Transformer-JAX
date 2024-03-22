@@ -6,6 +6,8 @@ import numpy as np
 from utils import Config
 import logging
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+import pickle
+from pathlib import Path
 
 class ReplayConifg(Config):
   observation_shape=(84, 84)
@@ -33,16 +35,33 @@ class FixedReplayBuffer:
     return self.replay_buffer.sample_transition_batch(batch_size=batch_size, indices=indices)
 
 class DatasetBuilder:
-  def __init__(self, path_buffer: int, dataset_step: int, traj_per_buffer: int, seed: int = 42):
+  def __init__(self, path_buffer: int, dataset_step: int, traj_per_buffer: int, seed: int = 42, save_cache: bool = True):
     """
     Args:
-      - path_buffer: .../game_name/id/replay_logs/{buffer1, buffer2, ...}
+      - path_buffer: .../dqn_replay/game_name/id/replay_logs/{buffer1, buffer2, ...}
       - n_step: The number of steps loads from buffers. (Dataset size = 3 * n_step)
       - traj_per_buffer: The number of trajactories loads from each buffer at once.
+      - save_cache: If taggled, the loaded buffer will be save at .../dqn_replay/game_name/dt_pkl/buffer_size_{steps}.pkl,
+          when the buffer size is less than pkl buffer size, it will automatically read from .pkl file
     """
     random.seed(seed)
+    torch.manual_seed(seed)
     self.path_buffer, self.dataset_step, self.traj_per_buffer = path_buffer, dataset_step, traj_per_buffer
-    self.preload()
+    self.save_cache = save_cache
+    self.path_pkl_dir = Path(self.path_buffer).parents[1].joinpath(f"dt_pkl/")
+    self.path_pkl_dir.mkdir(exist_ok=True)
+    self.data = None
+    self.check_pkl()
+    if self.data is None:
+      self.preload()
+  
+  def check_pkl(self):
+    for p in sorted(self.path_pkl_dir.glob('*.pkl')):
+      buffer_size = int(p.stem.split('_')[-1])
+      if buffer_size > self.dataset_step:
+        with p.open('rb') as file:
+          self.data = pickle.load(file)
+        print(f"Load replay buffer from {str(p)}")
   
   def preload(self):
     # obs, action, reward (each step), done_idx, return (each trajectory)
@@ -87,7 +106,10 @@ class DatasetBuilder:
       print(f"This buffer has {i} loaded steps and there are now {len(data['obs'])} steps total divided into {n_traj}, average trajectory length {len(data['obs']) / n_traj:.2f}")
     assert len(data['return']) == len(data['done_idx']), "The number of trajectories should be same."
     for k in data.keys(): data[k] = np.array(data[k])  # convert to np.ndarray since they are freezed
-    print(f"Max return {max(data['return'])}, max timestep is {max(data['timestep'])}, vocab size {max(data['action'])+1}")
+    data['info'] = f"\
+Max return: {max(data['return'])}, Max timestep: {max(data['timestep'])},\
+Vocab size: {max(data['action'])+1}, Total steps: {len(data['obs'])}, Trajectories: {n_traj}"
+    print(data['info'])
     ### Build return-to-go ###
     st = -1
     rtg = data['rtg'] = np.zeros_like(data['reward'])
@@ -97,6 +119,11 @@ class DatasetBuilder:
         rtg[j] = data['reward'][j] + (0 if j == i else rtg[j+1])
       st = i
     data.pop('reward'); data.pop('return')  # free space
+    
+    path_pkl = self.path_pkl_dir.joinpath(f"buffer_size_{len(data['obs']):08}.pkl")
+    with path_pkl.open('wb') as file:
+      pickle.dump(data, file)
+    print(f"Save replay buffer to {str(path_pkl)}")
   
   def show_buffer(self):
     import cv2

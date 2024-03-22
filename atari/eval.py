@@ -57,8 +57,8 @@ class Evaluator:
         done = t1 | t2
         self.s.append(s)
         self.a[-1] = a; self.a.append(0)  # keep s, a, r in same length, but last action is padding
-        self.rtg.append(max(self.rtg[-1] - int(r > 0), 1))
-        # self.rtg.append(self.rtg[-1] - r)
+        # self.rtg.append(max(self.rtg[-1] - int(r > 0), 1))
+        self.rtg.append(max(self.rtg[-1] - r, 1))
         timestep = min(timestep + 1, self.model.cfg.max_timestep - 1)
         self.timestep.append(timestep)
         ret[-1] += int(r > 0); score[-1] += r

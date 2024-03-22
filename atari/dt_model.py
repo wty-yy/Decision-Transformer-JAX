@@ -7,8 +7,8 @@ from typing import Callable, Sequence
 from utils import Config
 from functools import partial
 
-Dense = nn.Dense  # partial(nn.Dense, kernel_init=nn.initializers.normal(stddev=0.02))
-Embed = nn.Embed  # partial(nn.Embed, embedding_init=nn.initializers.normal(stddev=0.02))
+Dense = partial(nn.Dense, kernel_init=nn.initializers.normal(stddev=0.02))
+Embed = partial(nn.Embed, embedding_init=nn.initializers.normal(stddev=0.02))
 
 class TrainState(train_state.TrainState):
   dropout_rng: jax.Array
@@ -93,18 +93,18 @@ class GPT(nn.Module):
     B, l = rtg.shape
     assert cfg.n_token == l * 3, "The n_token should be 3 * n_step"
     ### Embedding ###
-    # rtg = nn.tanh(Dense(cfg.n_embd)(jnp.expand_dims(rtg, -1)))  # (B, l) -> (B, l, N_e)
-    rtg = Dense(cfg.n_embd)(jnp.expand_dims(rtg, -1))  # (B, l) -> (B, l, N_e)
+    rtg = nn.tanh(Dense(cfg.n_embd)(jnp.expand_dims(rtg, -1)))  # (B, l) -> (B, l, N_e)
+    # rtg = Dense(cfg.n_embd)(jnp.expand_dims(rtg, -1))  # (B, l) -> (B, l, N_e)
     s = nn.Sequential([  # (B, l, 84, 84, 4) -> (B, l, N_e)
       nn.Conv(32, kernel_size=(8, 8), strides=4, padding='VALID'), nn.silu,  # (20, 20, 32)
       nn.Conv(64, kernel_size=(4, 4), strides=2, padding='VALID'), nn.silu,  # (9, 9, 64)
       nn.Conv(64, kernel_size=(3, 3), strides=1, padding='VALID'), nn.silu,  # (7, 7, 64)
       lambda x: jnp.reshape(x, (B, l, -1)),
-      # Dense(cfg.n_embd), nn.tanh
-      Dense(cfg.n_embd)
+      Dense(cfg.n_embd), nn.tanh
+      # Dense(cfg.n_embd)
     ])(s)
-    # a = nn.tanh(Embed(cfg.n_vocab, cfg.n_embd)(a))  # (B, l) -> (B, l, N_e)
-    a = Embed(cfg.n_vocab, cfg.n_embd)(a)  # (B, l) -> (B, l, N_e)
+    a = nn.tanh(Embed(cfg.n_vocab, cfg.n_embd)(a))  # (B, l) -> (B, l, N_e)
+    # a = Embed(cfg.n_vocab, cfg.n_embd)(a)  # (B, l) -> (B, l, N_e)
     time_embd = nn.Embed(cfg.max_timestep+1, cfg.n_embd, embedding_init=nn.initializers.zeros)(timestep)  # (B, l) -> (B, l, N_e)
     # time_embd = self.param('time_embd', lambda _, shape: jnp.zeros(shape), (1, cfg.max_timestep, cfg.n_embd))  # (1, T, N_e)
     # time_embd = time_embd[:, timestep.reshape(-1), :]  # (1, l, N_e)
