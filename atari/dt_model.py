@@ -104,7 +104,6 @@ class GPT(nn.Module):
       # Dense(cfg.n_embd)
     ])(s)
     a = nn.tanh(Embed(cfg.n_vocab, cfg.n_embd)(a))  # (B, l) -> (B, l, N_e)
-    # a = Embed(cfg.n_vocab, cfg.n_embd)(a)  # (B, l) -> (B, l, N_e)
     time_embd = nn.Embed(cfg.max_timestep+1, cfg.n_embd, embedding_init=nn.initializers.zeros)(timestep)  # (B, l) -> (B, l, N_e)
     # time_embd = self.param('time_embd', lambda _, shape: jnp.zeros(shape), (1, cfg.max_timestep, cfg.n_embd))  # (1, T, N_e)
     # time_embd = time_embd[:, timestep.reshape(-1), :]  # (1, l, N_e)

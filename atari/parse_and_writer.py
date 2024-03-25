@@ -23,7 +23,7 @@ def parse_args_and_writer(input_args=None, with_writer=True) -> tuple[argparse.N
   ### Dataset ###
   parser.add_argument("--path-buffer-root", type=str, default="/home/yy/Coding/GitHub/decision-transformer/atari/dqn_replay/")
   parser.add_argument("--game", type=str, default="Breakout")
-  parser.add_argument("--dataset-step", type=int, default=10000, help="The number of step samples from replay buffer")
+  parser.add_argument("--dataset-step", type=int, default=500000, help="The number of step samples from replay buffer")
   parser.add_argument("--traj-per-buffer", type=int, default=10, help="The number of trajectory samples from each replay buffer")
   parser.add_argument("--num-workers", type=int, default=4)
 
