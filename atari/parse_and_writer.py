@@ -19,6 +19,7 @@ def parse_args_and_writer(input_args=None, with_writer=True) -> tuple[argparse.N
   parser.add_argument("--n-head", type=int, default=8)  # 12
   parser.add_argument("--n-block", type=int, default=6)  # 12
   parser.add_argument("--n-token", type=int, default=90)
+  parser.add_argument("--weight-decay", type=float, default=1e-4)
   ### Dataset ###
   parser.add_argument("--path-buffer-root", type=str, default="/home/yy/Coding/GitHub/decision-transformer/atari/dqn_replay/")
   parser.add_argument("--game", type=str, default="Breakout")

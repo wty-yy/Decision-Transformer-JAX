@@ -1,5 +1,5 @@
 import os
-os.environ['XLA_PYTHON_CLIENT_PREALLOCATE'] = 'false'  # allocate GPU memory as needed
+os.environ['XLA_PYTHON_CLIENT_ALLOCATOR'] = 'platform'  # allocate GPU memory as needed
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parents[1]))
@@ -56,10 +56,12 @@ def train():
         logs.reset()
     print("Evaluating...")
     ret, score = evaluator(state, n_test=10, rtg=90, deterministic=False)
+    print(f"Mean eval return: {np.mean(ret):.1f}, Mean eval score: {np.mean(score):.1f}")
     logs.update(['eval_return', 'eval_score', 'epoch'], [np.mean(ret), np.mean(score), ep+1])
     logs.writer_tensorboard(writer, state.step)
     ckpt_manager.save(ep+1, state, vars(args))
   ckpt_manager.close()
+  writer.close()
   if args.wandb:
     import wandb
     wandb.finish()
