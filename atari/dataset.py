@@ -39,7 +39,7 @@ class DatasetBuilder:
     """
     Args:
       - path_buffer: .../dqn_replay/game_name/id/replay_logs/{buffer1, buffer2, ...}
-      - n_step: The number of steps loads from buffers. (Dataset size = 3 * n_step)
+      - dataset_step: The number of steps loads from buffers.
       - traj_per_buffer: The number of trajactories loads from each buffer at once.
       - save_cache: If taggled, the loaded buffer will be save at .../dqn_replay/game_name/dt_pkl/buffer_size_{steps}.pkl,
           when the buffer size is less than pkl buffer size, it will automatically read from .pkl file
@@ -62,6 +62,7 @@ class DatasetBuilder:
         with p.open('rb') as file:
           self.data = pickle.load(file)
         print(f"Load replay buffer from {str(p)}")
+        break
   
   def preload(self):
     # obs, action, reward (each step), done_idx, return (each trajectory)
@@ -147,9 +148,9 @@ Vocab size: {max(data['action'])+1}, Total steps: {len(data['obs'])}, Trajectori
         # cv2.waitKey(0)
         if terminal: cum_reward = 0
     
-  def get_dataset(self, n_token: int, batch_size: int, num_workers: int = 4):  # Only train dataset
+  def get_dataset(self, n_step: int, batch_size: int, num_workers: int = 4):  # Only train dataset
     return DataLoader(
-      StateActionReturnDataset(self.data, n_token),
+      StateActionReturnDataset(self.data, n_step),
       batch_size=batch_size,
       shuffle=True,
       persistent_workers=True,  # GOOD
@@ -159,9 +160,8 @@ Vocab size: {max(data['action'])+1}, Total steps: {len(data['obs'])}, Trajectori
 
 
 class StateActionReturnDataset(Dataset):
-  def __init__(self, data: dict, n_token: int):
-    self.data, self.n_token = data, n_token
-    self.n_step = n_token // 3
+  def __init__(self, data: dict, n_step: int):
+    self.data, self.n_step = data, n_step
   
   def __len__(self):
     return len(self.data['obs']) - self.n_step - 1
@@ -184,7 +184,7 @@ if __name__ == '__main__':
   ds_builder = DatasetBuilder(path_buffer, dataset_step=5000, traj_per_buffer=20)
   ds_builder.show_buffer()
   torch.multiprocessing.set_start_method('spawn')
-  ds = ds_builder.get_dataset(30*3, 128)
+  ds = ds_builder.get_dataset(30, 128)
   from tqdm import tqdm
   for s, a, rtg, timestep, y in tqdm(ds):
     ...
