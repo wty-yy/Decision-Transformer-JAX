@@ -84,6 +84,6 @@ if __name__ == '__main__':
   path_video_save_dir = None
   load_step = 10
   lte = LoadToEvaluate(path_weights, load_step, show=False, path_video_save_dir=path_video_save_dir)
-  ret, score = lte.evaluate(n_test=10, rtg=90, deterministic=)
+  ret, score = lte.evaluate(n_test=10, rtg=90, deterministic=False)
   print(ret, score)
   print(np.mean(ret), np.mean(score))  # avg score (no deterministic): 146.6, 127.8, (deterministic): 65.2 (so bad)
