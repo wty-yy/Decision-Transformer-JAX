@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parents[1]))
 from dt_model import GPTConfig, TrainConfig, GPT
 from parse_and_writer import parse_args_and_writer, logs
-from dataset import DatasetBuilder
+from atari.dataset import DatasetBuilder
 from ckpt_manager import CheckpointManager
 from tqdm import tqdm
 from eval import Evaluator

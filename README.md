@@ -28,6 +28,8 @@ gsutil -m cp -R gs://atari-replay-datasets/dqn/Breakout/1/ ./dqn_replay/Breakout
 - [`run_RADT.sh`](run_RADT.sh) for Return-Aligned Decision Transformer.
 - [`run_StAR.sh`](run_StAR.sh) for StARformer.
 
+Change the `--path-buffer-root` to your `dqn_replay` path in each running script.
+
 ## Reference
 
 1. Decision-Transformer: https://arxiv.org/pdf/2106.01345.pdf, official code: https://github.com/kzl/decision-transformer
