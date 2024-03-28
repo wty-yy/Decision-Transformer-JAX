@@ -19,10 +19,6 @@ def train():
   train_ds = ds_builder.get_dataset(args.n_step, args.batch_size, args.num_workers)
   args.n_vocab, args.max_timestep = int(max(ds_builder.data['action'])) + 1, int(max(ds_builder.data['timestep']))  # since we must get last idx value
   args.steps_per_epoch = len(train_ds)
-  # from debug.create_dataset import get_dataset
-  # data, train_ds = get_dataset(args)
-  # args.n_vocab, args.max_timestep = data.vocab_size, int(max(data.timesteps))
-  # args.steps_per_epoch = len(train_ds)
   ### Model ###
   gpt_cfg = GPTConfig(**vars(args))
   model = GPT(cfg=gpt_cfg)

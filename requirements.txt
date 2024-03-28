@@ -1,0 +1,15 @@
+atari_py==0.2.9
+dopamine_rl==4.0.6
+einops==0.7.0
+flax==0.8.1
+gymnasium==0.29.1
+jax[cuda11_local]==0.4.24  # 12.* CUDA: pip install "jax[cuda12_local]"
+numpy==1.26.4
+opencv_python==4.9.0.80
+optax==0.2.2
+orbax==0.1.9
+tensorboardX==2.6.2.2
+torch==2.2.0
+torchvision==0.17.0
+tqdm==4.66.2
+wandb==0.16.4
