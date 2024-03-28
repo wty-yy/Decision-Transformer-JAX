@@ -51,12 +51,10 @@ class CausalSelfAttention(nn.Module):
   p_drop_attn: float
 
   @nn.compact
-  def __call__(self, x: jnp.ndarray, train: bool, mask_len: Sequence[int] = None):
+  def __call__(self, x: jnp.ndarray, train: bool):
     D = self.n_embd // self.n_head  # hidden dim
     B, L, _ = x.shape  # Bachsize, token length, embedding dim
     mask = jnp.expand_dims(jnp.tri(L), (0, 1))  # Only consider previous token values
-    if mask_len is not None:
-      mask = jnp.where(jnp.arange(L).reshape(1, 1, L, 1).repeat(B, 0) >= mask_len.reshape(B, 1, 1, 1), 0, mask)
     x = Dense(3 * self.n_embd)(x)
     q, k, v = jnp.array_split(x.reshape(B, L, self.n_head, -1).transpose(0, 2, 1, 3), 3, -1)
     attn = q @ jnp.swapaxes(k, -1, -2) / jnp.sqrt(D)
@@ -71,10 +69,10 @@ class AttentionBlock(nn.Module):
   cfg: GPTConfig
 
   @nn.compact
-  def __call__(self, x: jnp.ndarray, train: bool, mask_len: Sequence[int] = None):
+  def __call__(self, x: jnp.ndarray, train: bool):
     attn_cfg = {key: getattr(self.cfg, key) for key in ['n_embd', 'n_head', 'p_drop_attn']}
     z = nn.LayerNorm()(x)
-    z = CausalSelfAttention(**attn_cfg)(z, train, mask_len)
+    z = CausalSelfAttention(**attn_cfg)(z, train)
     x = x + nn.Dropout(self.cfg.p_drop_resid)(z, deterministic=not train)
     z = nn.Sequential([
       nn.LayerNorm(),
@@ -88,7 +86,7 @@ class GPT(nn.Module):
   cfg: GPTConfig
 
   @nn.compact
-  def __call__(self, s, a, rtg, timestep, train: bool, mask_len: Sequence[int] = None):
+  def __call__(self, s, a, rtg, timestep, train: bool):
     cfg = self.cfg
     B, l = rtg.shape
     assert cfg.n_token == l * 3, "The n_token should be 3 * n_step"
@@ -119,7 +117,7 @@ class GPT(nn.Module):
     ### GPT-1 ###
     x = nn.Dropout(cfg.p_drop_embd)(x, deterministic=not train)
     for _ in range(cfg.n_block):
-      x = AttentionBlock(cfg)(x, train, mask_len)
+      x = AttentionBlock(cfg)(x, train)
     x = nn.LayerNorm()(x)
     x = Dense(cfg.n_vocab, use_bias=False)(x)
     return x
@@ -189,7 +187,7 @@ class GPT(nn.Module):
 
     def predict(state: TrainState, s, a, rtg, timestep, mask_len: Sequence[int] = None, rng: jax.Array = None, deterministic: bool = False):
       # print(s.shape, a.shape, rtg.shape, timestep.shape, mask_len.shape)
-      logits = state.apply_fn({'params': state.params}, s, a, rtg, timestep, train=False, mask_len=mask_len)
+      logits = state.apply_fn({'params': state.params}, s, a, rtg, timestep, train=False)
       # logits = logits[:, 1::3, :]  # (B, l, N_e)
       if mask_len is not None:
         logits = logits[jnp.arange(logits.shape[0]), mask_len-1, :]  # (B, n_vocab)

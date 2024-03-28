@@ -81,7 +81,8 @@ class LoadToEvaluate:
 
 if __name__ == '__main__':
   path_weights = r"/home/yy/Coding/GitHub/Decision-Transformer-JAX/logs/DT__Breakout__0__20240321_121021/ckpt"
-  load_step = 5
+  path_weights = r"/home/yy/Coding/GitHub/Decision-Transformer-JAX/logs/DT_wty__Breakout__1__20240325_141559/ckpt"
+  load_step = 2
   lte = LoadToEvaluate(path_weights, load_step)
   ret, score = lte.evaluate(n_test=10, rtg=90, deterministic=False, show=False)
   print(ret, score)
