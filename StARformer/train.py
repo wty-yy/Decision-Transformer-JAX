@@ -29,7 +29,7 @@ def train():
   ckpt_manager = CheckpointManager(str(args.path_logs / 'ckpt'))
   write_tfboard_freq = min(100, len(train_ds))
   ### Evaluator ###
-  evaluator = Evaluator(model, args.seed)
+  evaluator = Evaluator(model, game=args.game, seed=args.seed)
 
   ### Train and Evaluate ###
   for ep in range(args.total_epochs):

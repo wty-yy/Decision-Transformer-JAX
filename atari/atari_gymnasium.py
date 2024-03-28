@@ -7,6 +7,10 @@ import numpy as np
 
 game2name = {
   'breakout': 'BreakoutNoFrameskip-v4',
+  'pong': 'ALE/Pong-v5',
+  'assault': 'ALE/Assault-v5',
+  'box': 'ALE/Boxing-v5',
+  'qbert': 'ALE/Qbert-v5',
 }
 
 class Env:
