@@ -70,7 +70,8 @@ class DatasetBuilder:
     used_traj_per_buffer = np.zeros(50, dtype=np.int32)
     n_traj = 0
     while len(data['obs']) < self.dataset_step:
-      buffer_id = random.randint(0, 49)
+      # buffer_id = random.randint(0, 49)
+      buffer_id = 1
       i = used_traj_per_buffer[buffer_id]
       print(f"Loading from buffer {buffer_id} which has {i} already loaded.")
       frb = FixedReplayBuffer(self.path_buffer, buffer_id, **dict(replay_config))
@@ -132,10 +133,10 @@ Vocab size: {max(data['action'])+1}, Total steps: {len(data['obs'])}, Trajectori
     cv2.resizeWindow('Replay buffer', 5*84, 5*84)
     data = self.data
     cum_reward = 0
-    st = np.argmax(data['rtg'])
-    assert st == 0 or (st-1) in data['done_idx'], "CHECK rtg"
+    # st = np.argmax(data['rtg'])
+    # assert st == 0 or (st-1) in data['done_idx'], "CHECK rtg"
     # st = 0 if i == 0 else data['done_idx'][i-1] + 1
-    for i in range(st, len(data['obs'])):
+    for i in range(0, len(data['obs'])):
     # for st in data['done_idx']:
       # for i in range(st-10, st+10):
         terminal = i in data['done_idx']
@@ -180,10 +181,9 @@ class StateActionReturnDataset(Dataset):
     return s, a, rtg, timestep
   
 if __name__ == '__main__':
-  path_buffer = r"/home/yy/Coding/GitHub/decision-transformer/atari/dqn_replay/Breakout/1/replay_logs"
+  path_buffer = r"/home/yy/Coding/datasets/dqn_replay/Pong/1/replay_logs"
   ds_builder = DatasetBuilder(path_buffer, dataset_step=5000, traj_per_buffer=20)
   ds_builder.show_buffer()
-  torch.multiprocessing.set_start_method('spawn')
   ds = ds_builder.get_dataset(30, 128)
   from tqdm import tqdm
   for s, a, rtg, timestep, y in tqdm(ds):
