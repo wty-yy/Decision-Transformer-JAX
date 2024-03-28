@@ -1,7 +1,7 @@
 # Decision Transformer in JAX
 
 ## Features
-1. Atari envs use `gymnasium` instead of `atari_py`
+1. Atari Env for evaluation uses `gymnasium`, instead of `atari_py`
 2. Support `Tensorboard` & `WandB`
 3. Better performance than offical coding
 4. Three models related to Transformer with offline RL: DT, RADT, StARformer (see [reference](#reference))
