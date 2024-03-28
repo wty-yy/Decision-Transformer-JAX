@@ -12,6 +12,7 @@ Run 3 different seeds for each model, test 10 times at each evaluation. [WandB o
 ![Training Curve in WandB](./asserts/Training%20Curve.png)
 
 ## GIF
+Evaluate `Breakout` by model `StARformer` training with `seed=0`
 <img src="./asserts/391_scores.gif" alt="Breakout by StARformer" width="250"/>
 
 ## Start
