@@ -7,10 +7,10 @@ import numpy as np
 
 game2name = {
   'breakout': 'BreakoutNoFrameskip-v4',
-  'pong': 'ALE/Pong-v5',
-  'assault': 'ALE/Assault-v5',
-  'box': 'ALE/Boxing-v5',
-  'qbert': 'ALE/Qbert-v5',
+  'pong': 'PongNoFrameskip-v4',
+  'assault': 'AssaultNoFrameskip-v4',
+  'boxing': 'BoxingNoFrameskip-v4',
+  'qbert': 'QbertNoFrameskip-v4',
 }
 
 class Env:
@@ -86,7 +86,7 @@ class Env:
     
 if __name__ == '__main__':
   ### Test Env ###
-  env = Env(game='Breakout', seed=42, auto_shoot=True, show=True, path_video_save_dir="../logs/eval_videos")
+  env = Env(game='Pong', seed=42, auto_shoot=True, show=True, path_video_save_dir="../logs/eval_videos")
   s, _ = env.reset()
   done = False
   while not done:
