@@ -12,15 +12,15 @@ Run 3 different seeds for each model, test 10 times at each evaluation. [WandB o
 ![Training Curve in WandB](./asserts/Training%20Curve.png)
 
 ## GIF
-Evaluate `Breakout` by model `StARformer` training with `seed=0`
+Evaluate `Breakout` by model `StARformer` training with `seed=0`, `391` scores.
 
 <img src="./asserts/391_breakout.gif" alt="Breakout by StARformer" width="250"/>
 
-Evaluate `Pong` by model `StARformer` training with `seed=0`
+Evaluate `Pong` by model `StARformer` training with `seed=0`, `20` scores.
 
 <img src="./asserts/20_pong.gif" alt="Pong by StARformer" width="250"/>
 
-Evaluate `Boxing` by model `StARformer` training with `seed=0`
+Evaluate `Boxing` by model `StARformer` training with `seed=0`, `94` scores.
 
 <img src="./asserts/94_boxing.gif" alt="Boxing by StARformer" width="250"/>
 
