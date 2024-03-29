@@ -13,8 +13,11 @@ Run 3 different seeds for each model, test 10 times at each evaluation. [WandB o
 
 ## GIF
 Evaluate `Breakout` by model `StARformer` training with `seed=0`
+
 <img src="./asserts/391_breakout.gif" alt="Breakout by StARformer" width="250"/>
+
 Evaluate `Pong` by model `StARformer` training with `seed=0`
+
 <img src="./asserts/20_pong.gif" alt="Breakout by StARformer" width="250"/>
 
 ## Start
