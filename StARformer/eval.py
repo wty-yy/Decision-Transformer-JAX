@@ -84,7 +84,8 @@ class LoadToEvaluate:
 
 if __name__ == '__main__':
   # path_weights = r"../logs/StARformer_JAX__star_reward_timestep__Breakout__0__20240327_011926/ckpt"
-  path_weights = r"../logs/StARformer_JAX__star_reward_timestep__Pong__0__20240329_080059/ckpt"
+  # path_weights = r"../logs/StARformer_JAX__star_reward_timestep__Pong__0__20240329_080059/ckpt"
+  path_weights = r"../logs/StARformer_JAX__star_reward_timestep__Boxing__0__20240329_135845/ckpt"
   path_video_save_dir = r"../logs/eval_videos"
   load_step = 10
   lte = LoadToEvaluate(path_weights, load_step, show=False, path_video_save_dir=path_video_save_dir)

@@ -89,7 +89,7 @@ class Env:
     if self.writer is not None:
       self.writer.write(s[...,0])
     if (t1 | t2) and self.writer is not None:
-      print(f"Save episode{self.ep} at {Path(self.path_video_save_dir)}/episode{self.ep-1}.mp4")
+      print(f"Save episode{self.ep} at {Path(self.path_video_save_dir)}/episode{self.ep}.mp4")
       self.writer.release()
     return s, r, t1, t2, info
     

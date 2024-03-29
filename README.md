@@ -18,7 +18,11 @@ Evaluate `Breakout` by model `StARformer` training with `seed=0`
 
 Evaluate `Pong` by model `StARformer` training with `seed=0`
 
-<img src="./asserts/20_pong.gif" alt="Breakout by StARformer" width="250"/>
+<img src="./asserts/20_pong.gif" alt="Pong by StARformer" width="250"/>
+
+Evaluate `Boxing` by model `StARformer` training with `seed=0`
+
+<img src="./asserts/94_boxing.gif" alt="Boxing by StARformer" width="250"/>
 
 ## Start
 ### Download Dataset
