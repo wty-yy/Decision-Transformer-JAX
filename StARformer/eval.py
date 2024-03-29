@@ -3,7 +3,7 @@ from flax.training import train_state
 import cv2, jax
 import numpy as np
 from pathlib import Path
-from atari.atari_gymnasium import Env
+from atari.atari_gymnasium import Env, game2rtg
 
 class Evaluator:
   def __init__(
@@ -76,17 +76,19 @@ class LoadToEvaluate:
     state = self.model.get_state(TrainConfig(**cfg), train=False)
     self.state = state.replace(params=params, tx=None, opt_state=None)
     self.evaluator = Evaluator(self.model, game=cfg['game'], seed=cfg['seed'], auto_shoot=auto_shoot, show=show, path_video_save_dir=path_video_save_dir)
+    self.rtg = game2rtg[cfg['game'].lower()]
   
   def evaluate(self, n_test: int = 10, rtg: int = 90, deterministic: bool = False):
     result = self.evaluator(self.state, n_test=n_test, rtg=rtg, deterministic=deterministic)
     return result
 
 if __name__ == '__main__':
-  path_weights = r"../logs/StARformer_JAX__star_reward_timestep__Breakout__0__20240327_011926/ckpt"
-  # path_video_save_dir = r"../logs/eval_videos"
-  path_video_save_dir = None
+  # path_weights = r"../logs/StARformer_JAX__star_reward_timestep__Breakout__0__20240327_011926/ckpt"
+  path_weights = r"../logs/StARformer_JAX__star_reward_timestep__Pong__0__20240329_080059/ckpt"
+  path_video_save_dir = r"../logs/eval_videos"
   load_step = 10
   lte = LoadToEvaluate(path_weights, load_step, show=False, path_video_save_dir=path_video_save_dir)
-  ret, score = lte.evaluate(n_test=10, rtg=90, deterministic=False)
+  ret, score = lte.evaluate(n_test=10, rtg=lte.rtg, deterministic=False)
   print(ret, score)
-  print(np.mean(ret), np.mean(score))  # avg score (no deterministic): 146.6, 127.8, (deterministic): 65.2 (so bad)
+  print(np.mean(ret), np.mean(score))
+  # Breakout: avg score (no deterministic): 146.6, 127.8, (deterministic): 65.2 (so bad)

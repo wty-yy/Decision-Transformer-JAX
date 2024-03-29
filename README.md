@@ -3,7 +3,7 @@
 ## Features
 1. Atari Env for evaluation uses `gymnasium`, instead of `atari_py`
 2. Support `Tensorboard` & `WandB`
-3. Better performance than offical coding
+3. Better performance than offical coding in `Breakout`
 4. Three models related to Transformer with offline RL: DT, RADT, StARformer (see [reference](#reference))
 
 ## Training Curve
@@ -13,7 +13,12 @@ Run 3 different seeds for each model, test 10 times at each evaluation. [WandB o
 
 ## GIF
 Evaluate `Breakout` by model `StARformer` training with `seed=0`
-<img src="./asserts/391_scores.gif" alt="Breakout by StARformer" width="250"/>
+
+<img src="./asserts/391_breakout.gif" alt="Breakout by StARformer" width="250"/>
+
+Evaluate `Pong` by model `StARformer` training with `seed=0`
+
+<img src="./asserts/20_pong.gif" alt="Breakout by StARformer" width="250"/>
 
 ## Start
 ### Download Dataset
