@@ -11,6 +11,7 @@ game2name = {
   'assault': 'AssaultNoFrameskip-v4',
   'boxing': 'BoxingNoFrameskip-v4',
   'qbert': 'QbertNoFrameskip-v4',
+  'seaquest': 'SeaquestNoFrameskip-v4',
 }
 game2rtg = {
   'breakout': 90,
@@ -18,7 +19,7 @@ game2rtg = {
   'assault': 800,
   'boxing': 90,
   'qbert': 14000,
-  'Seaquest': 1150,
+  'seaquest': 1150,
 }
 
 class Env:
