@@ -14,6 +14,7 @@ class Evaluator:
     self.rng = jax.random.PRNGKey(seed)
     self.n_step = self.model.cfg.n_step
     self.n_vocab = self.model.cfg.n_vocab
+    self.game = game.lower()
     self.env = Env(game=game, seed=seed, auto_shoot=auto_shoot, show=show, path_video_save_dir=path_video_save_dir)
   
   def get_action(self):
@@ -53,8 +54,10 @@ class Evaluator:
         done = t1 | t2
         self.s.append(s)
         self.a.append(a)
-        self.rtg.append(max(self.rtg[-1] - int(r > 0), 1))
-        # self.rtg.append(max(self.rtg[-1] - r, 1))
+        if self.game == 'breakout':  # `breakout` reward in dqn-replay is step reward.
+          self.rtg.append(max(self.rtg[-1] - int(r > 0), 1))
+        else:
+          self.rtg.append(max(self.rtg[-1] - r, 1))
         timestep = min(timestep + 1, self.model.cfg.max_timestep - 1)
         self.timestep.append(timestep)
         ret[-1] += int(r > 0); score[-1] += r

@@ -12,6 +12,14 @@ game2name = {
   'boxing': 'BoxingNoFrameskip-v4',
   'qbert': 'QbertNoFrameskip-v4',
 }
+game2rtg = {
+  'breakout': 90,
+  'pong': 20,
+  'assault': 800,
+  'boxing': 90,
+  'qbert': 14000,
+  'Seaquest': 1150,
+}
 
 class Env:
   def __init__(self, game: str = 'Breakout', seed: int = 42, auto_shoot: bool = True,

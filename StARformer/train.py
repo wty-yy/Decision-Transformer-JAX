@@ -10,6 +10,7 @@ from ckpt_manager import CheckpointManager
 from tqdm import tqdm
 from eval import Evaluator
 import numpy as np
+from atari.atari_gymnasium import game2rtg
 
 def train():
   ### Parse augment and TF Writer ###
@@ -52,7 +53,7 @@ def train():
         logs.writer_tensorboard(writer, state.step)
         logs.reset()
     print("Evaluating...")
-    ret, score = evaluator(state, n_test=10, rtg=90, deterministic=False)
+    ret, score = evaluator(state, n_test=10, rtg=game2rtg[args.game.lower()], deterministic=False)
     print(f"Mean eval return: {np.mean(ret):.1f}, Mean eval score: {np.mean(score):.1f}")
     logs.update(['eval_return', 'eval_score', 'epoch'], [np.mean(ret), np.mean(score), ep+1])
     logs.writer_tensorboard(writer, state.step)
