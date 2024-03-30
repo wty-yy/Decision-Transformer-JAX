@@ -11,7 +11,7 @@ game2name = {
   'assault': 'AssaultNoFrameskip-v4',
   'boxing': 'BoxingNoFrameskip-v4',
   'qbert': 'QbertNoFrameskip-v4',
-  'seaquest': 'SeaquestNoFrameskip-v4',
+  'seaquest': 'SeaquestNoFrameskip-v0',
 }
 game2rtg = {
   'breakout': 90,
@@ -95,7 +95,7 @@ class Env:
     
 if __name__ == '__main__':
   ### Test Env ###
-  env = Env(game='Pong', seed=42, auto_shoot=True, show=True, path_video_save_dir="../logs/eval_videos")
+  env = Env(game='Assault', seed=42, auto_shoot=True, show=True, path_video_save_dir="../logs/eval_videos")
   s, _ = env.reset()
   done = False
   while not done:

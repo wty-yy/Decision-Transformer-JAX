@@ -47,6 +47,7 @@ class DatasetBuilder:
     random.seed(seed)
     torch.manual_seed(seed)
     self.path_buffer, self.dataset_step, self.traj_per_buffer = path_buffer, dataset_step, traj_per_buffer
+    self.game = Path(self.path_buffer).parts[-3]
     self.save_cache = save_cache
     self.path_pkl_dir = Path(self.path_buffer).parents[1].joinpath(f"dt_pkl/")
     self.path_pkl_dir.mkdir(exist_ok=True)
@@ -93,7 +94,8 @@ class DatasetBuilder:
         if terminal[0]:
           pre_step = len(data['obs'])
           data['done_idx'].append(len(data['obs'])-1)
-          i += 6  # To skip useless step, between two trajectories
+          if self.game not in ['Assault']:
+            i += 6  # To skip useless step, between two trajectories
           if traj_count == self.traj_per_buffer or len(data['obs']) >= self.dataset_step:  # trajectory count is enough or dataset is full, finish
             break
           else: traj_count += 1
@@ -180,7 +182,7 @@ class StateActionReturnDataset(Dataset):
     return s, a, rtg, timestep
   
 if __name__ == '__main__':
-  path_buffer = r"/home/yy/Coding/datasets/dqn_replay/Pong/1/replay_logs"
+  path_buffer = r"/home/yy/Coding/datasets/dqn_replay/Assault/1/replay_logs"
   ds_builder = DatasetBuilder(path_buffer, dataset_step=5000, traj_per_buffer=20)
   ds_builder.show_buffer()
   ds = ds_builder.get_dataset(30, 128)

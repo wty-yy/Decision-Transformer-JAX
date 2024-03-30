@@ -24,6 +24,14 @@ Evaluate `Boxing` by model `StARformer` training with `seed=0`, `94` scores.
 
 <img src="./asserts/94_boxing.gif" alt="Boxing by StARformer" width="250"/>
 
+Evaluate `Qbert` by model `StARformer` training with `seed=0`, `14550` scores.
+
+<img src="./asserts/14550_qbert.gif" alt="Qbert by StARformer" width="250"/>
+
+Evaluate `Seaquest` by model `StARformer` training with `seed=0`, `1480` scores.
+
+<img src="./asserts/1480_seaquest.gif" alt="Seaquest by StARformer" width="250"/>
+
 ## Start
 ### Download Dataset
 Use the same training dataset as [GitHub-decision-transformer](https://github.com/kzl/decision-transformer),

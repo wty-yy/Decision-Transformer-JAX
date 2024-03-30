@@ -54,7 +54,7 @@ class Evaluator:
         done = t1 | t2
         self.s.append(s)
         self.a.append(a)
-        if self.game == 'breakout':  # `breakout` reward in dqn-replay is step reward.
+        if self.game in ['breakout', 'assault']:  # `breakout` reward in dqn-replay is step reward.
           self.rtg.append(max(self.rtg[-1] - int(r > 0), 1))
         else:
           self.rtg.append(max(self.rtg[-1] - r, 1))
@@ -85,7 +85,10 @@ class LoadToEvaluate:
 if __name__ == '__main__':
   # path_weights = r"../logs/StARformer_JAX__star_reward_timestep__Breakout__0__20240327_011926/ckpt"
   # path_weights = r"../logs/StARformer_JAX__star_reward_timestep__Pong__0__20240329_080059/ckpt"
-  path_weights = r"../logs/StARformer_JAX__star_reward_timestep__Boxing__0__20240329_135845/ckpt"
+  # path_weights = r"../logs/StARformer_JAX__star_reward_timestep__Boxing__0__20240329_135845/ckpt"
+  # path_weights = r"../logs/StARformer_JAX__star_reward_timestep__Qbert__0__20240329_200118/ckpt"
+  # path_weights = r"../logs/StARformer_JAX__star_reward_timestep__Seaquest__0__20240329_201059/ckpt"
+  path_weights = r"../logs/StARformer_JAX__star_reward_timestep__Assault__2__20240329_200343/ckpt"
   path_video_save_dir = r"../logs/eval_videos"
   load_step = 10
   lte = LoadToEvaluate(path_weights, load_step, show=False, path_video_save_dir=path_video_save_dir)
