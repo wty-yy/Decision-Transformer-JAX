@@ -6,7 +6,7 @@ sys.path.append(str(Path(__file__).parents[1]))
 from RADT_model import GPTConfig, TrainConfig, GPT
 from parse_and_writer import parse_args_and_writer, logs
 from atari.dataset import DatasetBuilder
-from ckpt_manager import CheckpointManager
+from utils.ckpt_manager import CheckpointManager
 from tqdm import tqdm
 from eval import Evaluator
 import numpy as np
