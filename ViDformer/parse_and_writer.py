@@ -15,13 +15,12 @@ def parse_args_and_writer(input_args=None, with_writer=True) -> tuple[argparse.N
   parser.add_argument("--total-epochs", type=int, default=10)
   parser.add_argument("--batch-size", type=int, default=64)
   ### Model ###
-  parser.add_argument("--mode", type=str, default="star_reward_timestep")
   parser.add_argument("--n-embd-global", type=int, default=192)
   parser.add_argument("--n-head-global", type=int, default=8)
   parser.add_argument("--n-embd-local", type=int, default=64)
   parser.add_argument("--n-head-local", type=int, default=4)
   parser.add_argument("--n-block", type=int, default=6)
-  parser.add_argument("--n-step", type=int, default=30, nargs='+')
+  parser.add_argument("--n-step", type=int, default=30)
   parser.add_argument("--patch-size", default=(7, 7))
   parser.add_argument("--weight-decay", type=float, default=1e-1)
   ### Dataset ###

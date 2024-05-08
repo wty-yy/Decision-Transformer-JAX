@@ -48,16 +48,26 @@ Evaluate `Seaquest` by model `StARformer` training with `seed=0`, `1480` scores.
 Use the same training dataset as [GitHub-decision-transformer](https://github.com/kzl/decision-transformer),
 download dataset, please refer to [readme-atari.md](https://github.com/kzl/decision-transformer/blob/master/atari/readme-atari.md). Since **we just need 1% dataset**, bellow cmd can download minimal size:
 ```shell
-mkdir ./dqn_replay/Breakout
-gsutil -m cp -R gs://atari-replay-datasets/dqn/Breakout/1/ ./dqn_replay/Breakout
+mkdir -p ./dqn_replay/Breakout
+gsutil -m cp -R gs://atari-replay-datasets/dqn/Breakout/1 ./dqn_replay/Breakout
 ```
+
+You can replace name of environment `Breakout` with `Pong, Assault, Boxing, Qbert, Seaquest`
 
 ### Training
 - [`run.sh`](run.sh) for Decision Transformer.
 - [`run_RADT.sh`](run_RADT.sh) for Return-Aligned Decision Transformer.
 - [`run_StAR.sh`](run_StAR.sh) for StARformer.
+- [`run_ViDformer.sh`](run_ViDformer.sh) for ViDformer.
 
-Change the `--path-buffer-root` to your `dqn_replay` path in each running script.
+**Change the `--path-buffer-root` to your `dqn_replay` path in each running script.**
+
+> NOTE: `DatasetBuilder` will create `./dqn_reply/[EnvName]/dt_pkl` for saving `.pkl` cache file after first loading replay buffer, this can accelerate reading for next time.
+
+```shell
+run_StAR.sh --game [EnvName] \ # Change EnvName in [Breakout, Pong, Assault, Boxing, Qbert, Seaquest]
+--wandb  # Upload tensorboard to wandb
+```
 
 ## Reference
 
