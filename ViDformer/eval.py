@@ -1,4 +1,4 @@
-from starformer_model import StARformer
+from vidformer_model import ViDformer
 from flax.training import train_state
 import cv2, jax
 import numpy as np
@@ -16,7 +16,7 @@ def pad_along_axis(array: np.ndarray, target_length: int, axis: int = 0) -> np.n
 
 class Evaluator:
   def __init__(
-      self, model: StARformer, game: str, seed: int = 42, auto_shoot: bool = True,
+      self, model: ViDformer, game: str, seed: int = 42, auto_shoot: bool = True,
       show: bool = False, path_video_save_dir: str = None,
     ):
     self.model = model
@@ -49,14 +49,15 @@ class Evaluator:
       ret.append(0); score.append(0)
       s, _ = self.env.reset()
       done, timestep = False, 0
-      # Use 'n_vocab' as first start action
-      self.s, self.a, self.rtg, self.timestep = [s], [self.n_vocab], [rtg], [0]
+      # Use padding as first start action
+      self.s, self.a, self.rtg, self.timestep = [s], [0], [rtg], [1]
       while not done:
         a = self.get_action()
         s, r, t1, t2, _ = self.env.step(a)
         done = t1 | t2
         self.s.append(s)
-        self.a.append(a)
+        a[-1] = a
+        self.a.append(0)
         if self.game in ['breakout', 'assault']:  # `breakout` reward in dqn-replay is step reward.
           self.rtg.append(max(self.rtg[-1] - int(r > 0), 1))
         else:
@@ -68,13 +69,13 @@ class Evaluator:
     return ret, score
 
 from utils.ckpt_manager import CheckpointManager
-from starformer_model import StARformer, StARConfig, TrainConfig
+from vidformer_model import ViDformer, ViDConfig, TrainConfig
 class LoadToEvaluate:
   def __init__(self, path_weights, load_step, auto_shoot: bool = True, show: bool = False, path_video_save_dir: str = None):
     ckpt_mngr = CheckpointManager(path_weights)
     load_info = ckpt_mngr.restore(load_step)
     params, cfg = load_info['params'], load_info['config']
-    self.model = StARformer(cfg=StARConfig(**cfg))
+    self.model = ViDformer(cfg=ViDConfig(**cfg))
     self.model.create_fns()
     state = self.model.get_state(TrainConfig(**cfg), train=False)
     self.state = state.replace(params=params, tx=None, opt_state=None)

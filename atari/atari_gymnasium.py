@@ -51,7 +51,7 @@ class Env:
     self.ep = 0
     self.path_video_save_dir = path_video_save_dir
     if self.path_video_save_dir is not None:
-      Path(self.path_video_save_dir).mkdir(exist_ok=True)
+      Path(self.path_video_save_dir).mkdir(parents=True, exist_ok=True)
     self.writer = None
     self.env.reset(seed=seed)
   
@@ -94,8 +94,9 @@ class Env:
     return s, r, t1, t2, info
     
 if __name__ == '__main__':
+  path_root = Path(__file__).parents[1]
   ### Test Env ###
-  env = Env(game='Assault', seed=42, auto_shoot=True, show=True, path_video_save_dir="../logs/eval_videos")
+  env = Env(game='Assault', seed=42, auto_shoot=True, show=True, path_video_save_dir=(path_root/"logs/eval_videos"))
   s, _ = env.reset()
   done = False
   while not done:
