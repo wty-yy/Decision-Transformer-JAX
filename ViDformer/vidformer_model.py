@@ -111,9 +111,9 @@ class ViDBlock(nn.Module):
     B, N2, ng = xg.shape  # Batch, Step Length * 2, n_embd_global
     xl = local_block(xl.reshape(B * N, M, nl), train=train).reshape(B, N, M, nl)
     zg = Dense(ng)(xl.reshape(B, N, M * nl)).reshape(B, N, 1, ng)
-    xg = xg.reshape(B, N, 2, ng)
-    zg = jnp.concatenate([zg, xg], 2).reshape(B, N + N2, ng)
-    mask = jnp.tri(N + N2)
+    xg = xg.reshape(B, N, 2, ng)  # a, r
+    zg = jnp.concatenate([xg, zg], 2).reshape(B, N + N2, ng)  # a, r, s
+    mask = jnp.tri(N2 + N)
     zg = global_block(zg, mask=mask, train=train)
     return xl, zg
 
@@ -150,9 +150,9 @@ class ViDformer(nn.Module):
       xl, zg = ViDBlock(cfg=self.cfg)(xl, xg, train)
       zg = rearrange(zg, 'B (n N) Ng -> B Ng N n', n=3)
       if i != cfg.n_block - 1:  # xg.shape=(B, 2*N, Ng), get action, reward
-        xg = zg[...,1:]
+        xg = zg[...,:2]
       else:  # xg.shape=(B, N, Ng), get state
-        xg = zg[...,0:1]
+        xg = zg[...,2:3]
       xg = rearrange(xg, 'B Ng N n -> B (n N) Ng')
     xg = nn.LayerNorm()(xg)
     xg = Dense(cfg.n_vocab, use_bias=False)(xg)
