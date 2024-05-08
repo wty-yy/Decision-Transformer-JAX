@@ -107,11 +107,12 @@ class ViDBlock(nn.Module):
   def __call__(self, xl, xg, train = True):
     local_block = TransformerBlock(n_embd=self.cfg.n_embd_local, n_head=self.cfg.n_head_local, cfg=self.cfg)
     global_block = TransformerBlock(n_embd=self.cfg.n_embd_global, n_head=self.cfg.n_head_global, cfg=self.cfg)
-    B, N, M, Dl = xl.shape  # Batch, Step Length, Group Token Length, n_embd_local
-    B, N2, Dg = xg.shape  # Batch, Step Length * 2, n_embd_global
-    xl = local_block(xl.reshape(B * N, M, Dl), train=train).reshape(B, N, M, Dl)
-    zg = Dense(Dg)(xl.reshape(B, N, M * Dl))
-    zg = jnp.concatenate([zg, xg], 1)  # shape=(B, N + N2, Dg)
+    B, N, M, nl = xl.shape  # Batch, Step Length, Group Token Length, n_embd_local
+    B, N2, ng = xg.shape  # Batch, Step Length * 2, n_embd_global
+    xl = local_block(xl.reshape(B * N, M, nl), train=train).reshape(B, N, M, nl)
+    zg = Dense(ng)(xl.reshape(B, N, M * nl)).reshape(B, N, 1, ng)
+    xg = xg.reshape(B, N, 2, ng)
+    zg = jnp.concatenate([zg, xg], 2).reshape(B, N + N2, ng)
     mask = jnp.tri(N + N2)
     zg = global_block(zg, mask=mask, train=train)
     return xl, zg
@@ -127,11 +128,11 @@ class ViDformer(nn.Module):
     ### Embedding Global Token ###
     # pos_embd = nn.Embed(N, ng, embedding_init=nn.initializers.zeros)(jnp.arange(N))  # (1, N, Ng)
     # Action #
-    a = Embed(cfg.n_vocab, ng)(a).reshape(B, N, ng)  # (B, N) -> (B, N, Ng)
+    a = Embed(cfg.n_vocab+1, ng)(a).reshape(B, N, ng).reshape(B, N, 1, ng)  # (B, N) -> (B, N, 1, Ng)
     # Reward #
-    r = nn.tanh(Dense(ng)(jnp.expand_dims(r, -1)))  # (B, N) -> (B, N, Ng)
+    r = nn.tanh(Dense(ng)(jnp.expand_dims(r, -1))).reshape(B, N, 1, ng)  # (B, N) -> (B, N, 1, Ng)
     time_embd_g = nn.Embed(cfg.max_timestep+1, ng, embedding_init=nn.initializers.zeros)(timestep)  # (B, N) -> (B, N, Ng)
-    xg = jnp.concatenate([a, r], 1) + time_embd_g.repeat(2, 1)
+    xg = jnp.concatenate([a, r], 2).reshape(B, 2*N, ng) + time_embd_g.repeat(2, 1)
     ### Embedding Local Token ###
     # NOTE: Add `n_vocab` as start action
     p1, p2 = self.cfg.patch_size

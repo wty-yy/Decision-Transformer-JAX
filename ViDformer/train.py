@@ -41,7 +41,8 @@ def train():
     bar = tqdm(train_ds, ncols=80)
     for s, y, rtg, timestep in bar:
       s, y, rtg, timestep = s.numpy(), y.numpy(), rtg.numpy(), timestep.numpy()
-      a = y
+      # Look out the target is diff with input action, we need a `n_vocab` as start action padding idx.
+      a = np.concatenate([np.full((y.shape[0], 1), args.n_vocab, np.int32), y[:,:-1]], 1)
       state, (loss, acc) = model.model_step(state, s, a, rtg, timestep, y, train=True)
       logs.update(['train_loss', 'train_acc'], [loss, acc])
       bar.set_description(f"loss={loss:.4f}, acc={acc:.4f}")

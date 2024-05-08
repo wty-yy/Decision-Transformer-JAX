@@ -50,14 +50,13 @@ class Evaluator:
       s, _ = self.env.reset()
       done, timestep = False, 0
       # Use padding as first start action
-      self.s, self.a, self.rtg, self.timestep = [s], [0], [rtg], [1]
+      self.s, self.a, self.rtg, self.timestep = [s], [self.model.cfg.n_vocab], [rtg], [1]
       while not done:
         a = self.get_action()
         s, r, t1, t2, _ = self.env.step(a)
         done = t1 | t2
         self.s.append(s)
-        a[-1] = a
-        self.a.append(0)
+        self.a.append(a)
         if self.game in ['breakout', 'assault']:  # `breakout` reward in dqn-replay is step reward.
           self.rtg.append(max(self.rtg[-1] - int(r > 0), 1))
         else:
