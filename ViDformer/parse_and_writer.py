@@ -38,7 +38,7 @@ def parse_args_and_writer(input_args=None, with_writer=True) -> tuple[argparse.N
 
   ### Create Path ###
   path_root = Path(__file__).parents[1]
-  args.run_name = f"{args.name}__{args.mode}__{args.game}__{args.seed}__{time.strftime(r'%Y%m%d_%H%M%S')}"
+  args.run_name = f"{args.name}__{args.game}__{args.seed}__{time.strftime(r'%Y%m%d_%H%M%S')}"
   path_logs = path_root / "logs" / args.run_name
   path_logs.mkdir(parents=True, exist_ok=True)
   args.path_logs = path_logs
